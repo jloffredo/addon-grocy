@@ -1,0 +1,65 @@
+From bfa3347a20c764b8e3c8dc75e917affcfa7108bd Mon Sep 17 00:00:00 2001
+From: Bernd Bestel <bernd@berrnd.de>
+Date: Tue, 12 Jan 2021 18:04:20 +0100
+Subject: [PATCH] Fixed that editing stock entries was not possible (fixes
+ #1268)
+
+---
+ changelog/62_UNRELEASED_xxxx-xx-xx.md | 1 +
+ helpers/extensions.php                | 5 +++++
+ services/StockService.php             | 6 +++---
+ 3 files changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/changelog/62_UNRELEASED_xxxx-xx-xx.md b/changelog/62_UNRELEASED_xxxx-xx-xx.md
+index 54b891c..faae5f1 100644
+--- a/changelog/62_UNRELEASED_xxxx-xx-xx.md
++++ b/changelog/62_UNRELEASED_xxxx-xx-xx.md
+@@ -1 +1,2 @@
+ - Fixed that tracking chores with "Done by" a different user was not possible
++- Fixed that editing stock entries was not possible
+diff --git a/helpers/extensions.php b/helpers/extensions.php
+index 73296a3..c17f6ab 100644
+--- a/helpers/extensions.php
++++ b/helpers/extensions.php
+@@ -156,6 +156,11 @@ function BoolToString(bool $bool)
+ 	return $bool ? 'true' : 'false';
+ }
+ 
++function BoolToInt(bool $bool)
++{
++	return $bool ? 1 : 0;
++}
++
+ function ExternalSettingValue(string $value)
+ {
+ 	$tvalue = rtrim($value, "\r\n");
+diff --git a/services/StockService.php b/services/StockService.php
+index 8aa04bf..6cad459 100644
+--- a/services/StockService.php
++++ b/services/StockService.php
+@@ -402,11 +402,11 @@ class StockService extends BaseService
+ 
+ 		$openedDate = $stockRow->opened_date;
+ 
+-		if ($open && $openedDate == null)
++		if (boolval($open) && $openedDate == null)
+ 		{
+ 			$openedDate = date('Y-m-d');
+ 		}
+-		elseif (!$open)
++		elseif (!boolval($open))
+ 		{
+ 			$openedDate = null;
+ 		}
+@@ -418,7 +418,7 @@ class StockService extends BaseService
+ 			'location_id' => $locationId,
+ 			'shopping_location_id' => $shoppingLocationId,
+ 			'opened_date' => $openedDate,
+-			'open' => $open,
++			'open' => BoolToInt($open),
+ 			'purchased_date' => $purchasedDate
+ 		]);
+ 
+-- 
+2.25.1
+
